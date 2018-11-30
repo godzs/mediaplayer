@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:id="@+id/mediaSeekBar"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3px"
+            android:layout_marginTop="5px" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/playButton"
+            android:layout_weight="1"
+            android:layout_width="12dp"
+           android:layout_marginLeft="25dp"
+            android:textColor="#ffffff"
+            android:layout_marginRight="15dp"
+            android:layout_height="wrap_content"
+            android:background="#d32f2f"
+            android:text="play" />
+                <Button
+            android:id="@+id/stopButton"
+            android:layout_weight="1"
+            android:textColor="#ffffff"
+            android:background="#d32f2f"
+            android:layout_width="12dp"
+            android:layout_height="wrap_content"
+            android:text="stop" />
+
+        <Button
+            android:id="@+id/replayButton"
+            android:layout_weight="1"
+            android:background="#d32f2f"
+            android:layout_width="12dp"
+            android:textColor="#ffffff"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="25dp"
+            android:layout_height="wrap_content"
+
+            android:text="replay" />
+    </LinearLayout>
+</LinearLayout>
