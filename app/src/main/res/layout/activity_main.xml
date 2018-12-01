@@ -8,6 +8,7 @@
     tools:context=".MainActivity">
 
 
+    <include layout="@layout/music_list" />
 
         <SeekBar
             android:layout_width="match_parent"
@@ -17,37 +18,40 @@
             android:layout_marginTop="5px" />
 
     <LinearLayout
+        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:layout_height="wrap_content">
+
         <Button
             android:id="@+id/playButton"
             android:layout_weight="1"
-            android:layout_width="12dp"
+            android:layout_width="5dp"
            android:layout_marginLeft="25dp"
             android:textColor="#ffffff"
             android:layout_marginRight="15dp"
-            android:layout_height="wrap_content"
-            android:background="#d32f2f"
+            android:layout_height="30dp"
+            android:background="#512DA8"
             android:text="play" />
                 <Button
             android:id="@+id/stopButton"
             android:layout_weight="1"
             android:textColor="#ffffff"
-            android:background="#d32f2f"
-            android:layout_width="12dp"
-            android:layout_height="wrap_content"
+            android:background="#512DA8"
+            android:layout_width="5dp"
+             android:layout_height="30dp"
+
             android:text="stop" />
 
         <Button
             android:id="@+id/replayButton"
             android:layout_weight="1"
-            android:background="#d32f2f"
-            android:layout_width="12dp"
+            android:background="#512DA8"
+            android:layout_width="5dp"
             android:textColor="#ffffff"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="25dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
 
             android:text="replay" />
     </LinearLayout>
