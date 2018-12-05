@@ -4,7 +4,16 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -13,11 +22,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.zhousheng.mediaplayer.Music;
+
+import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -26,14 +39,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-private MediaPlayer mediaPlayer=new MediaPlayer();
-protected ArrayList<Music> musiclist;
+    private MediaPlayer mediaPlayer=new MediaPlayer();
+    protected ArrayList<Music> musiclist;
+   private int musicposition;
+    private Bitmap circle_photo;
     private ArrayList<Map<String, Object>> music_item;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final TextView  small_title=(TextView)findViewById(R.id.small_title);
+        final  TextView  small_singer=(TextView)findViewById(R.id.small_singer);
+        final ImageView imag=(ImageView)findViewById(R.id.imag);
+        final TextView  time_end=(TextView)findViewById(R.id.time_end);
         Button play=(Button)findViewById(R.id.playButton);
         Button pause=(Button)findViewById(R.id.pauseButton);
         Button stop=(Button)findViewById(R.id.stopButton);
@@ -41,6 +62,20 @@ protected ArrayList<Music> musiclist;
         play.setOnClickListener(this);
         pause.setOnClickListener(this);
         stop.setOnClickListener(this);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                small_title.setText(musiclist.get(position).getTitle());
+                small_singer.setText(musiclist.get(position).getSinger());
+               circle_photo=getRoundedCornerBitmap(musiclist.get(position).getPhoto(),2);
+                imag.setImageBitmap(circle_photo);
+                System.out.println(musiclist.get(position).getDuration());
+                time_end.setText(change_time(musiclist.get(position).getDuration()));
+
+            }
+        });
+
         if(ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(MainActivity.this,new String[]
@@ -51,6 +86,40 @@ protected ArrayList<Music> musiclist;
         {
             initMediaPlayer();
         }
+    }
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float ratio) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawRoundRect(rectF, bitmap.getWidth() / ratio,
+                bitmap.getHeight() / ratio, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
+    }
+
+
+
+    private Bitmap getAlbumArt(int albumID) {
+        String mUriAlbums = "content://media/external/audio/albums";
+        String[] projection = new String[]{"album_art"};
+        Cursor cur = getContentResolver().query(Uri.parse(mUriAlbums + "/" + Integer.toString(albumID)), projection, null, null, null);
+        String album_art = null;
+        if (cur.getCount() > 0 && cur.getColumnCount() > 0) {
+            cur.moveToNext();
+            album_art = cur.getString(0);
+        }
+        cur.close();
+        Bitmap bm = null;
+        if (album_art != null) {
+            bm = BitmapFactory.decodeFile(album_art);
+        }
+        return bm;
     }
 
     public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults)
@@ -73,25 +142,34 @@ protected ArrayList<Music> musiclist;
     }
     public String change_size(long size)
     {
-        long GB = 1024 * 1024 * 1024;//定义GB的计算常量
-        long  MB = 1024 * 1024;//定义MB的计算常量
-        long KB = 1024;//定义KB的计算常量
+        long GB = 1024 * 1024 * 1024;
+        long  MB = 1024 * 1024;
+        long KB = 1024;
         DecimalFormat df = new DecimalFormat("0.00");//格式化小数
         String resultSize = "";
         if (size / GB >= 1) {
-            //如果当前Byte的值大于等于1GB
+
             resultSize = df.format(size / (float) GB) + "GB   ";
         } else if (size / MB >= 1) {
-            //如果当前Byte的值大于等于1MB
+
             resultSize = df.format(size / (float) MB) + "MB   ";
         } else if (size / KB >= 1) {
-            //如果当前Byte的值大于等于1KB
+
             resultSize = df.format(size / (float) KB) + "KB   ";
         } else {
             resultSize = size + "B   ";
         }
       return resultSize;
 
+    }
+    public String change_time(int time)
+    {
+        String result_time;
+        int new_time=time/1000;
+        int min=new_time/60;
+        int sec=new_time%60;
+        result_time=format("%02d:%d",min,sec);
+        return result_time;
     }
 private void initMediaPlayer()
 {
@@ -129,22 +207,24 @@ private void initMediaPlayer()
                 String title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));  //歌名
                 System.out.println(title);
                 String album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));  //专辑
-                int albumId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));   //专辑号
+                int albumId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));   //专辑封面id
                 String singer = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));  //歌手
                 System.out.println(singer);
                 String url = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));   //路径
                 int duration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));  //事件
                 Long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));  //大小
+                Bitmap photo=getAlbumArt(albumId);
                 if (size >1024*800){//大于800K
                     Music music = new Music();
                     music.setId(id);
-                    music.setSinger(singer);
-                    music.setSize(size);
                     music.setTitle(title);
-                    music.setDuration(duration);
-                    music.setUrl(url);
+                    music.setSinger(singer);
                     music.setAlbum(album);
+                    music.setDuration(duration);
+                    music.setSize(size);
+                    music.setUrl(url);
                     music.setAlbumId(albumId);
+                    music.setPhoto(photo);
                     musiclist.add(music);
                 }
                 cursor.moveToNext();
