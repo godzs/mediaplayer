@@ -34,7 +34,7 @@
             android:background="#512DA8"
             android:text="play" />
                 <Button
-            android:id="@+id/stopButton"
+            android:id="@+id/pauseButton"
             android:layout_weight="1"
             android:textColor="#ffffff"
             android:background="#512DA8"
@@ -44,7 +44,7 @@
             android:text="stop" />
 
         <Button
-            android:id="@+id/replayButton"
+            android:id="@+id/stopButton"
             android:layout_weight="1"
             android:background="#512DA8"
             android:layout_width="5dp"
