@@ -123,13 +123,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             mediaPlayer.setDataSource(MainActivity.this, uri);
             mediaPlayer.prepare();
-            mediaPlayer.start();
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mediaPlayer.start();
     }
-    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float ratio) {
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float ratio) {       //播放时的圆形封面
         Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
                 bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
