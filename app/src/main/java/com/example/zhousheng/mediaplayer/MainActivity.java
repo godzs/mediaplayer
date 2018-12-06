@@ -43,10 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MediaPlayer mediaPlayer=new MediaPlayer();
     protected ArrayList<Music> musiclist;
     Handler handler=new Handler();
-    int time;
+    private int time;
     private Bitmap circle_photo;
     SeekBar mediaSeekbar;
     private boolean click;
+    private int pos;
+    private int num;
 
     private ArrayList<Map<String, Object>> music_item;
 
@@ -56,47 +58,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final TextView  small_title=(TextView)findViewById(R.id.small_title);
-        final  TextView  small_singer=(TextView)findViewById(R.id.small_singer);
-        final ImageView imag=(ImageView)findViewById(R.id.imag);
-        mediaSeekbar=(SeekBar)findViewById(R.id.mediaSeekBar);
 
-        final TextView  time_end=(TextView)findViewById(R.id.time_end);
-        //mediaSeekbar.setOnSeekBarChangeListener((SeekBar.OnSeekBarChangeListener) this);
+
         Button play=(Button)findViewById(R.id.playButton);
         Button pause=(Button)findViewById(R.id.pauseButton);
         Button stop=(Button)findViewById(R.id.stopButton);
+        Button pre=(Button)findViewById(R.id.pre);
+        Button next=(Button)findViewById(R.id.next);
+        mediaSeekbar=(SeekBar)findViewById(R.id.mediaSeekBar);
+
         ListView listview = (ListView)findViewById(R.id.list_view);
+
         play.setOnClickListener(this);
-        mediaSeekbar.setOnSeekBarChangeListener(sbLis);
+        pre.setOnClickListener(this);
+        next.setOnClickListener(this);
         pause.setOnClickListener(this);
         stop.setOnClickListener(this);
+        mediaSeekbar.setOnSeekBarChangeListener(sbLis);
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                time=musiclist.get(position).getDuration();
-                small_title.setText(musiclist.get(position).getTitle());
-                small_singer.setText(musiclist.get(position).getSinger());
-               circle_photo=getRoundedCornerBitmap(musiclist.get(position).getPhoto(),2);
-                imag.setImageBitmap(circle_photo);
-                System.out.println(musiclist.get(position).getDuration());
-                time_end.setText(change_time(musiclist.get(position).getDuration()));
-                small_title.setTextColor(Color.BLUE);
-                mediaSeekbar.setMax(time);
-                handler.post(updateseekbar);
-                Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(musiclist.get(position).getId()));   //找到路径
-                mediaPlayer.reset();
-                try {
-
-                    mediaPlayer.setDataSource(MainActivity.this, uri);
-                    mediaPlayer.prepare();
-                    mediaPlayer.start();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+                begin_gain(position);
             }
+
         });
 
         if(ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
@@ -108,6 +93,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else
         {
             initMediaPlayer();
+        }
+    }
+    public void begin_gain(int position)
+    {
+        TextView  small_title=(TextView)findViewById(R.id.small_title);
+        TextView  small_singer=(TextView)findViewById(R.id.small_singer);
+        ImageView imag=(ImageView)findViewById(R.id.imag);
+        TextView  time_end=(TextView)findViewById(R.id.time_end);
+        time=musiclist.get(position).getDuration();
+        small_title.setText(musiclist.get(position).getTitle());
+        small_singer.setText(musiclist.get(position).getSinger());
+        circle_photo=getRoundedCornerBitmap(musiclist.get(position).getPhoto(),2);
+        imag.setImageBitmap(circle_photo);
+        pos=position;
+        time_end.setText(change_time(musiclist.get(position).getDuration()));
+        small_title.setTextColor(Color.BLUE);
+        mediaSeekbar.setMax(time);
+        handler.post(updateseekbar);
+        Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(musiclist.get(position).getId()));   //找到路径
+        mediaPlayer.reset();
+        try {
+
+            mediaPlayer.setDataSource(MainActivity.this, uri);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float ratio) {
@@ -207,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 private void initMediaPlayer()
 {
+
     findMusic();
     ListView listview = (ListView)findViewById(R.id.list_view);
     music_item = new ArrayList<Map<String, Object>>();
@@ -233,9 +247,11 @@ private void initMediaPlayer()
 
     public void findMusic(){
         musiclist = new ArrayList<Music>();
+        num=0;
         Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         if(cursor.moveToFirst()){
             while (!cursor.isAfterLast()) {
+                num++;
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID));  //id号
                 String title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));  //歌名
                 System.out.println(title);
@@ -297,6 +313,29 @@ private void initMediaPlayer()
                     mediaPlayer.seekTo(0);
                     mediaPlayer.pause();
                 break;
+            case R.id.pre:
+                if(pos==0)
+                {
+                    Toast.makeText(MainActivity.this, "该歌曲为第一首歌！", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                else {
+                    begin_gain(pos - 1);
+                    break;
+                }
+            case R.id.next:
+                System.out.println(pos);
+                if(pos==num-1)
+                {
+                    begin_gain(0);
+                    break;
+                }
+                else
+                {
+                    begin_gain(pos+1);
+                }
+                break;
+
             default:
                 break;
         }
