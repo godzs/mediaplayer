@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         Button play=(Button)findViewById(R.id.playButton);
         Button pause=(Button)findViewById(R.id.pauseButton);
         Button stop=(Button)findViewById(R.id.stopButton);
@@ -82,6 +81,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 begin_gain(position);
             }
 
+        });
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {   //判断歌曲是否播放完
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.reset();
+                begin_gain(pos+1);
+            }
         });
 
         if(ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED)
@@ -240,7 +246,8 @@ private void initMediaPlayer()
         music_item,
         R.layout.music_list_item,
         new String[] {"title","size","singer", "album"},
-        new int[] {R.id.title,R.id.size,R.id.singer,R.id.album});
+        new int[] {R.id.title,R.id.size,R.id.singer,R.id.album}
+        );
     listview.setAdapter(mSimpleAdapter);
 
 }
