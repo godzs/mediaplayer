@@ -85,8 +85,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {   //判断歌曲是否播放完
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mp.reset();
-                begin_gain(pos+1);
+
+                if (pos==num-1)
+                {
+                    mp.reset();
+                    begin_gain(0);
+                }
+                else {
+                    mp.reset();
+                    begin_gain(pos + 1);
+                }
             }
         });
 
