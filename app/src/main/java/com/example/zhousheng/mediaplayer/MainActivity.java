@@ -1,12 +1,12 @@
 package com.example.zhousheng.mediaplayer;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -14,6 +14,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -24,19 +26,15 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.example.zhousheng.mediaplayer.Music;
-
-import org.w3c.dom.Text;
-
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -44,34 +42,59 @@ import static java.lang.String.format;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private MediaPlayer mediaPlayer=new MediaPlayer();
     protected ArrayList<Music> musiclist;
-   private int musicposition;
+    Handler handler=new Handler();
+    int time;
     private Bitmap circle_photo;
+    SeekBar mediaSeekbar;
+    private boolean click;
+
     private ArrayList<Map<String, Object>> music_item;
+
+
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final TextView  small_title=(TextView)findViewById(R.id.small_title);
         final  TextView  small_singer=(TextView)findViewById(R.id.small_singer);
         final ImageView imag=(ImageView)findViewById(R.id.imag);
+        mediaSeekbar=(SeekBar)findViewById(R.id.mediaSeekBar);
+
         final TextView  time_end=(TextView)findViewById(R.id.time_end);
+        //mediaSeekbar.setOnSeekBarChangeListener((SeekBar.OnSeekBarChangeListener) this);
         Button play=(Button)findViewById(R.id.playButton);
         Button pause=(Button)findViewById(R.id.pauseButton);
         Button stop=(Button)findViewById(R.id.stopButton);
         ListView listview = (ListView)findViewById(R.id.list_view);
         play.setOnClickListener(this);
+        mediaSeekbar.setOnSeekBarChangeListener(sbLis);
         pause.setOnClickListener(this);
         stop.setOnClickListener(this);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                time=musiclist.get(position).getDuration();
                 small_title.setText(musiclist.get(position).getTitle());
                 small_singer.setText(musiclist.get(position).getSinger());
                circle_photo=getRoundedCornerBitmap(musiclist.get(position).getPhoto(),2);
                 imag.setImageBitmap(circle_photo);
                 System.out.println(musiclist.get(position).getDuration());
                 time_end.setText(change_time(musiclist.get(position).getDuration()));
+                small_title.setTextColor(Color.BLUE);
+                mediaSeekbar.setMax(time);
+                handler.post(updateseekbar);
+                Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(musiclist.get(position).getId()));   //找到路径
+                mediaPlayer.reset();
+                try {
+
+                    mediaPlayer.setDataSource(MainActivity.this, uri);
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
@@ -103,9 +126,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return output;
     }
 
+    Runnable updateseekbar =new Runnable(){      //实现多线程操作
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            handler.postDelayed(updateseekbar, 60);    //更新频率
+            mediaSeekbar.setProgress(mediaPlayer.getCurrentPosition());
+            TextView time_begin = (TextView) findViewById(R.id.time_begin);
+            time_begin.setText(change_time(mediaPlayer.getCurrentPosition()));
 
+        }
 
-    private Bitmap getAlbumArt(int albumID) {
+    };
+
+    private Bitmap getAlbumArt(int albumID) {   //通过封面id找到图片
         String mUriAlbums = "content://media/external/audio/albums";
         String[] projection = new String[]{"album_art"};
         Cursor cur = getContentResolver().query(Uri.parse(mUriAlbums + "/" + Integer.toString(albumID)), projection, null, null, null);
@@ -133,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else
                 {
-                    Toast.makeText(this,"拒绝权限将无法使用该程序！",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"拒绝权限无法使用该程序！",Toast.LENGTH_SHORT).show();
                     finish();
                 }
                 break;
@@ -168,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int new_time=time/1000;
         int min=new_time/60;
         int sec=new_time%60;
-        result_time=format("%02d:%d",min,sec);
+        result_time=format("%02d:%02d",min,sec);
         return result_time;
     }
 private void initMediaPlayer()
@@ -185,7 +219,6 @@ private void initMediaPlayer()
         map.put("size",change_size(mp3.getSize()));
         map.put("duration", mp3.getDuration());
         map.put("url", mp3.getUrl());
-        //map.put("bitmap", R.drawable.musicfile);
         music_item.add(map);
     }
     SimpleAdapter mSimpleAdapter = new SimpleAdapter(
@@ -236,29 +269,57 @@ private void initMediaPlayer()
     {
         switch(v.getId())
         {
+
             case R.id.playButton:
                 if(!mediaPlayer.isPlaying())
                 {
                     mediaPlayer.start(); //开始播放
+                    handler.post(updateseekbar);
+                    click=false;
                 }
                 break;
             case R.id.pauseButton:
-                if(!mediaPlayer.isPlaying())
-                {
-                    mediaPlayer.pause();
-                }
+                if(true == click)
+            {
+                Toast.makeText(MainActivity.this, "您已暂停音乐！", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.stopButton:
+            }
                 if(mediaPlayer.isPlaying())
                 {
-                    mediaPlayer.reset();
-                    initMediaPlayer();
+                    //System.out.println("1111111");
+                    mediaPlayer.pause();
+                    click=true;
                 }
+
+                break;
+            case R.id.stopButton:
+                    mediaSeekbar.setProgress(0);
+                    mediaPlayer.seekTo(0);
+                    mediaPlayer.pause();
                 break;
             default:
                 break;
         }
     }
+    private SeekBar.OnSeekBarChangeListener sbLis=new SeekBar.OnSeekBarChangeListener(){
+        @Override
+       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                    }
+
+                @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+                        // TODO Auto-generated method stub
+
+                    }
+
+               @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+                        mediaPlayer.seekTo(mediaSeekbar.getProgress());
+                        //SeekBar确定位置后，跳到指定位置
+                    }
+
+            };
 
     protected void onDestroy()
 {
@@ -269,5 +330,4 @@ private void initMediaPlayer()
         mediaPlayer.release();
     }
 }
-
 }

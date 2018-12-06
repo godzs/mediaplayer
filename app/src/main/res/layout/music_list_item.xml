@@ -8,7 +8,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="22dp"
+                android:textSize="20dp"
+                android:layout_marginLeft="6dp"
                 android:textColor="#000000"
                 android:id="@+id/title"
                 android:text="title"/>
@@ -21,6 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="17dp"
+            android:layout_marginLeft="6dp"
             android:text="size"/>
 
             <TextView
@@ -28,6 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/singer"
+
                 android:textSize="17dp"
                 android:text="singer"/>
     </LinearLayout>
@@ -36,6 +39,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/album"
                 android:textSize="15dp"
+                android:layout_marginLeft="6dp"
                 android:text="album"/>
 
 
