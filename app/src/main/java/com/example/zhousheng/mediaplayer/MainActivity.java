@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 
 import static java.lang.String.format;
 
@@ -99,6 +100,11 @@ private int ok=1;
                         mp.reset();
                         begin_gain(pos + 1);
                     }
+                }
+                if(loop1.getText().toString().equals("rand")) {
+                   mp.reset();
+                    Random ra =new Random();
+                    begin_gain(ra.nextInt(num-1));
                 }
             }
         });
@@ -317,11 +323,11 @@ private void initMediaPlayer()
                 }
                 break;
             case R.id.pauseButton:
-                if(true == click)
+                /*if(true == click)
             {
                 Toast.makeText(MainActivity.this, "您已暂停音乐！", Toast.LENGTH_SHORT).show();
                 break;
-            }
+            }*/
                 if(mediaPlayer.isPlaying())
                 {
                     mediaPlayer.pause();
@@ -365,9 +371,17 @@ private void initMediaPlayer()
                 }
                 if(ok==2)
                 {
-                    ok=ok-1;
+                    ok=ok+1;
                     System.out.println(ok);
                     loop1.setText("order");
+                    break;
+
+                }
+                if(ok==3)
+                {
+                    ok=ok-2;
+                    System.out.println(ok);
+                    loop1.setText("rand");
                     break;
 
                 }
