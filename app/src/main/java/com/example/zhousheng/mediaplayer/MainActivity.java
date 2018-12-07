@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean click;
     private int pos;
     private int num;
-
+private int ok=1;
     private ArrayList<Map<String, Object>> music_item;
 
 
@@ -64,10 +64,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button stop=(Button)findViewById(R.id.stopButton);
         Button pre=(Button)findViewById(R.id.pre);
         Button next=(Button)findViewById(R.id.next);
+        final Button loop1=(Button)findViewById(R.id.loop);
         mediaSeekbar=(SeekBar)findViewById(R.id.mediaSeekBar);
 
         ListView listview = (ListView)findViewById(R.id.list_view);
-
+        loop1.setOnClickListener(this);
         play.setOnClickListener(this);
         pre.setOnClickListener(this);
         next.setOnClickListener(this);
@@ -85,15 +86,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {   //判断歌曲是否播放完
             @Override
             public void onCompletion(MediaPlayer mp) {
-
-                if (pos==num-1)
-                {
-                    mp.reset();
-                    begin_gain(0);
-                }
-                else {
-                    mp.reset();
-                    begin_gain(pos + 1);
+               if(loop1.getText().toString().equals("loop"))
+               {
+                   mp.reset();
+                   begin_gain(pos);
+               }
+                if(loop1.getText().toString().equals("order")) {
+                    if (pos == num - 1) {
+                        mp.reset();
+                        begin_gain(0);
+                    } else {
+                        mp.reset();
+                        begin_gain(pos + 1);
+                    }
                 }
             }
         });
@@ -158,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
             // TODO Auto-generated method stub
-            handler.postDelayed(updateseekbar, 60);    //更新频率
+            handler.postDelayed(updateseekbar, 80);    //更新频率
             mediaSeekbar.setProgress(mediaPlayer.getCurrentPosition());
             TextView time_begin = (TextView) findViewById(R.id.time_begin);
             time_begin.setText(change_time(mediaPlayer.getCurrentPosition()));
@@ -299,6 +304,7 @@ private void initMediaPlayer()
 
     public void onClick(View v)
     {
+        Button loop1=(Button)findViewById(R.id.loop);
         switch(v.getId())
         {
 
@@ -318,7 +324,6 @@ private void initMediaPlayer()
             }
                 if(mediaPlayer.isPlaying())
                 {
-                    //System.out.println("1111111");
                     mediaPlayer.pause();
                     click=true;
                 }
@@ -351,6 +356,23 @@ private void initMediaPlayer()
                     begin_gain(pos+1);
                 }
                 break;
+            case R.id.loop:
+                if(ok==1)
+                {
+                   loop1.setText("loop");
+                   ok=ok+1;
+                   break;
+                }
+                if(ok==2)
+                {
+                    ok=ok-1;
+                    System.out.println(ok);
+                    loop1.setText("order");
+                    break;
+
+                }
+                break;
+
 
             default:
                 break;
