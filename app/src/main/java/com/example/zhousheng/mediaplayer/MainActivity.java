@@ -133,7 +133,6 @@ private int ok=1;
         imag.setImageBitmap(circle_photo);
         pos=position;
         time_end.setText(change_time(musiclist.get(position).getDuration()));
-        small_title.setTextColor(Color.BLUE);
         mediaSeekbar.setMax(time);
         handler.post(updateseekbar);
         Uri uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, String.valueOf(musiclist.get(position).getId()));   //找到路径
@@ -323,15 +322,9 @@ private void initMediaPlayer()
                 }
                 break;
             case R.id.pauseButton:
-                /*if(true == click)
-            {
-                Toast.makeText(MainActivity.this, "您已暂停音乐！", Toast.LENGTH_SHORT).show();
-                break;
-            }*/
                 if(mediaPlayer.isPlaying())
                 {
                     mediaPlayer.pause();
-                    click=true;
                 }
 
                 break;

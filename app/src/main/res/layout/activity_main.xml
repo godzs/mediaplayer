@@ -12,7 +12,7 @@
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="83dp"
-    android:background="#D7CCC8"
+    android:background="#BDBDBD"
     android:orientation="horizontal">
 
     <ImageView
@@ -32,6 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:text="歌曲"
+            android:textStyle="bold"
             android:textColor="#000000"
             android:textSize="17dp" />
 
